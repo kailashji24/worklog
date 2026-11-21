@@ -1,0 +1,33 @@
+{
+  "name": "worklog",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Personal work log: track daily tasks and time, send a daily update email, get weekly/monthly reports with AI help.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "npm run build && vite preview",
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply worklog-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply worklog-db --remote",
+    "deploy": "npm run build && wrangler d1 migrations apply worklog-db --remote && wrangler deploy",
+    "deploy:ci": "wrangler d1 migrations apply worklog-db --remote && wrangler deploy",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "hono": "^4.13.19",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.70.1",
+    "@cloudflare/workers-types": "^5.20261121.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8",
+    "wrangler": "^4.166.0"
+  }
+}

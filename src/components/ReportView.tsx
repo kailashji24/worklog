@@ -214,7 +214,7 @@ export default function ReportView({ kind }: { kind: RangeKind }) {
             <div className="mb">
               <button
                 className="btn"
-                onClick={async () => toast((await copyText(await api.exportText(from, to, "md"))) ? "Log copied — paste it into Claude, Gemini or ChatGPT" : "Couldn't copy")}
+                onClick={async () => toast((await copyText(await api.exportText(from, to, "md"))) ? "Log copied — paste it into Gemini, ChatGPT or any AI" : "Couldn't copy")}
               >
                 <Icon name="copy" size={16} />
                 Copy log for AI

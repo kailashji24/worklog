@@ -92,7 +92,7 @@ export function rangeEmail(kind: RangeKind, from: string, to: string, all: Task[
   return { subject, body };
 }
 
-/** Readable Markdown for pasting into any AI (Claude, Gemini, ChatGPT). */
+/** Readable Markdown for pasting into any AI (Gemini, ChatGPT and others). */
 export function exportMarkdown(from: string, to: string, all: Task[]): string {
   const st = rangeStats(from, to, all);
   const out: string[] = [];

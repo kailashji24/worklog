@@ -12,7 +12,7 @@ Built to be fast, free to host, and simple to run: the whole app (frontend, API 
 - **Carry over**: unfinished tasks from earlier days move to today in one click, and the history is kept.
 - **Week and month reports**: time by area, hours per day, completed work and open items, plus a weekly or monthly email.
 - **AI (Gemini)**: "Polish with AI" for emails and "Write report" for a period, with your own instructions.
-- **Use with any AI**: copy your log as Markdown, download a CSV, or create a private read-only link that Claude (or any AI that can open links) can read.
+- **Use with any AI**: copy your log as Markdown, download a CSV, or create a private read-only link that any AI able to open links can read.
 - **Backup and restore** as JSON. It installs on your phone like an app (PWA).
 - Single-user password login, with brute-force lockout.
 

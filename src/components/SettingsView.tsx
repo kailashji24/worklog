@@ -77,7 +77,7 @@ export default function SettingsView() {
         <section className="card">
           <h3>Link for AI</h3>
           <p className="mute" style={{ marginTop: 0 }}>
-            A private, read-only link to your log as plain text. Give it to Claude (or any AI that can open links) and ask for a report. Change the
+            A private, read-only link to your log as plain text. Give it to any AI that can open links and ask for a report. Change the
             dates in the link for other periods. Anyone with the link can read your log, so reset it if you've shared it by mistake.
           </p>
           {token ? (

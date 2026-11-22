@@ -8,11 +8,11 @@ import ReportView from "./components/ReportView";
 import SettingsView from "./components/SettingsView";
 
 type Tab = "day" | "week" | "month" | "settings";
-const TABS: { id: Tab; label: string; icon: IconName }[] = [
-  { id: "day", label: "Today", icon: "day" },
-  { id: "week", label: "Week report", icon: "week" },
-  { id: "month", label: "Month report", icon: "month" },
-  { id: "settings", label: "Settings", icon: "settings" },
+const TABS: { id: Tab; label: string; short: string; icon: IconName }[] = [
+  { id: "day", label: "Today", short: "Today", icon: "day" },
+  { id: "week", label: "Week report", short: "Week", icon: "week" },
+  { id: "month", label: "Month report", short: "Month", icon: "month" },
+  { id: "settings", label: "Settings", short: "Settings", icon: "settings" },
 ];
 const tabFromHash = (): Tab => {
   const h = location.hash.slice(1);
@@ -70,6 +70,21 @@ function Shell({ onLogout }: { onLogout: () => void }) {
             <b>Work Log</b>
             <small>{settings.name || "Daily work tracker"}</small>
           </div>
+          {timer && (
+            <button
+              className="runpill"
+              aria-label="Stop timer"
+              onClick={async () => {
+                await api.stopTimer();
+                await refreshTimer();
+                changed();
+              }}
+            >
+              <span className="dot" />
+              {clock}
+              <Icon name="stop" size={12} />
+            </button>
+          )}
         </div>
         <nav className="nav" role="tablist">
           {TABS.map((t) => (
@@ -119,6 +134,14 @@ function Shell({ onLogout }: { onLogout: () => void }) {
         {tab === "settings" && <SettingsView />}
         <p className="savenote">All changes are saved automatically.</p>
       </main>
+      <nav className="bottomnav" aria-label="Sections">
+        {TABS.map((t) => (
+          <button key={t.id} aria-current={tab === t.id ? "page" : undefined} onClick={() => go(t.id)}>
+            <Icon name={t.icon} size={20} />
+            {t.short}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

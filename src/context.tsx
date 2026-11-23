@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { Settings, Task, Timer } from "../shared/types";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { Project, Settings, Task, Timer } from "../shared/types";
 import { DEFAULT_SETTINGS } from "../shared/types";
 import { todayKey } from "../shared/dates";
 import { api } from "./api";
@@ -13,6 +13,10 @@ interface AppState {
   settings: Settings;
   setSettings: (s: Settings) => void;
   categories: string[];
+  /** All projects, archived ones included (for labels on old tasks). */
+  projects: Project[];
+  projectMap: Map<string, Project>;
+  refreshProjects: () => Promise<void>;
   timer: Timer | null;
   refreshTimer: () => Promise<void>;
   setTimer: (t: Timer | null) => void;
@@ -37,6 +41,7 @@ export const useApp = () => {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [categories, setCategories] = useState<string[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [timer, setTimer] = useState<Timer | null>(null);
   const [now, setNow] = useState(Date.now());
   const [toastState, setToast] = useState<ToastState | null>(null);
@@ -49,6 +54,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCategories(r.categories);
     });
     api.timer().then(setTimer);
+    api.projects().then(setProjects);
+  }, []);
+
+  // Coming back to the tab (e.g. next morning): refresh the clock, the timer and the data.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      setNow(Date.now());
+      api.timer().then(setTimer).catch(() => {});
+      setVersion((v) => v + 1);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
   // Tick every second only while a timer runs; otherwise once a minute (keeps "today" fresh).
@@ -58,6 +76,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [timer]);
 
   const refreshTimer = useCallback(async () => setTimer(await api.timer()), []);
+  const refreshProjects = useCallback(async () => setProjects(await api.projects()), []);
+  const projectMap = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
   const minutes = useCallback(
     (t: Task) => (t.minutes || 0) + (timer && timer.taskId === t.id ? Math.max(0, (now - timer.startedAt) / 60000) : 0),
     [timer, now],
@@ -71,7 +91,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider
-      value={{ settings, setSettings, categories, timer, refreshTimer, setTimer, minutes, now, today: todayKey(), toast, version, changed }}
+      value={{ settings, setSettings, categories, projects, projectMap, refreshProjects, timer, refreshTimer, setTimer, minutes, now, today: todayKey(), toast, version, changed }}
     >
       {children}
       {toastState && (

@@ -1,4 +1,4 @@
-import type { Settings, Task, Timer } from "../shared/types";
+import type { Project, Settings, Task, Timer } from "../shared/types";
 
 export class ApiError extends Error {
   constructor(
@@ -26,6 +26,12 @@ export const api = {
   me: () => call<{ loggedIn: boolean; passwordSet: boolean }>("/me"),
   login: (password: string) => call<{ ok: true }>("/login", { method: "POST", json: { password } }),
   logout: () => call<{ ok: true }>("/logout", { method: "POST" }),
+  logoutAll: () => call<{ ok: true }>("/logout-all", { method: "POST" }),
+
+  projects: () => call<{ projects: Project[] }>("/projects").then((r) => r.projects),
+  createProject: (p: { name: string; color?: string }) => call<{ project: Project }>("/projects", { method: "POST", json: p }).then((r) => r.project),
+  updateProject: (id: string, p: Partial<Project>) => call<{ project: Project }>(`/projects/${id}`, { method: "PATCH", json: p }).then((r) => r.project),
+  deleteProject: (id: string) => call<{ ok: true }>(`/projects/${id}`, { method: "DELETE" }),
 
   tasks: (from: string, to: string) => call<{ tasks: Task[] }>(`/tasks?from=${from}&to=${to}`).then((r) => r.tasks),
   openBefore: (day: string) => call<{ tasks: Task[] }>(`/tasks/open?before=${day}`).then((r) => r.tasks),
@@ -45,7 +51,7 @@ export const api = {
   exportToken: () => call<{ token: string | null }>("/export/token").then((r) => r.token),
   newExportToken: () => call<{ token: string }>("/export/token", { method: "POST" }).then((r) => r.token),
   revokeExportToken: () => call<{ ok: true }>("/export/token", { method: "DELETE" }),
-  importBackup: (tasks: unknown[]) => call<{ imported: number }>("/import", { method: "POST", json: { tasks } }),
+  importBackup: (backup: unknown) => call<{ imported: number; projects: number; skipped: number; settings: boolean }>("/import", { method: "POST", json: backup }),
 
   polish: (text: string, kind: "day" | "week" | "month") =>
     call<{ text: string }>("/ai/polish", { method: "POST", json: { text, kind } }).then((r) => r.text),

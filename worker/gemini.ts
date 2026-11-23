@@ -67,17 +67,20 @@ const RULES =
   "Tighten the wording and fix grammar, but never invent work, numbers or outcomes. " +
   "Plain text only: no markdown, no asterisks, use '• ' for bullets. Return only the email body, no subject line.";
 
-export const polishPrompt = (kind: "day" | "week" | "month", body: string) =>
+const who = (role: string) => (role.trim() ? `The sender is: ${role.trim().slice(0, 200)}. ` : "The sender is a software/DevOps professional. ");
+
+export const polishPrompt = (kind: "day" | "week" | "month", body: string, role = "") =>
   (kind === "day"
     ? "Rewrite this daily work update email so it reads clear, professional and concise for a senior manager. "
     : "Rewrite this work summary email for a senior manager. Open with two or three sentences on the main highlights, then keep the lists. ") +
-  "The sender is a Data Specialist whose work also covers DevOps, backend and servers. " +
+  who(role) +
   RULES +
   "\n\nEMAIL:\n" +
   body;
 
-export const reportPrompt = (log: string, ask: string) =>
-  "You are helping a Data Specialist (whose work also covers DevOps, backend and servers) turn their own work log into a report. " +
-  "Use only facts from the log; do not invent tasks, numbers or outcomes. Group related work into themes, call out impact, " +
-  "time spent by area, and open blockers. Use short headings and bullet points (Markdown is fine).\n\n" +
+export const reportPrompt = (log: string, ask: string, role = "") =>
+  "You are helping someone turn their own work log into a report. " +
+  who(role) +
+  "Use only facts from the log; do not invent tasks, numbers or outcomes. Group related work by project and theme, call out impact, " +
+  "time spent by project and area, and open blockers. Use short headings and bullet points (Markdown is fine).\n\n" +
   `WHAT THEY WANT: ${ask || "A clear summary of the period for their manager, with highlights first."}\n\nWORK LOG:\n${log}`;

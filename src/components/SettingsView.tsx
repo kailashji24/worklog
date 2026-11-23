@@ -4,9 +4,10 @@ import { addDays } from "../../shared/dates";
 import { api } from "../api";
 import { copyText, useApp } from "../context";
 import { Icon } from "../icons";
+import ProjectsCard from "./ProjectsCard";
 
 export default function SettingsView() {
-  const { settings, setSettings, toast, today, changed } = useApp();
+  const { settings, setSettings, toast, today, changed, refreshProjects } = useApp();
   const [form, setForm] = useState<Settings>(settings);
   const [token, setToken] = useState<string | null>(null);
   const saveT = useRef<number>(0);
@@ -41,12 +42,18 @@ export default function SettingsView() {
         </div>
       </div>
       <div className="set">
+        <ProjectsCard />
+
         <section className="card">
           <h3>Update emails</h3>
           <div className="setf">
             <label className="lb">
               Your name (signs your emails)
               <input value={form.name} onChange={(e) => update({ name: e.target.value })} />
+            </label>
+            <label className="lb">
+              Your role (helps the AI write in context)
+              <input value={form.role} placeholder="e.g. Data Specialist working on DevOps and backend" onChange={(e) => update({ role: e.target.value })} />
             </label>
             <label className="lb">
               Send updates to
@@ -131,8 +138,9 @@ export default function SettingsView() {
                   if (!file) return;
                   try {
                     const data = JSON.parse(await file.text());
-                    const r = await api.importBackup(data.tasks ?? []);
-                    toast(`Restored ${r.imported} tasks`);
+                    const r = await api.importBackup(data);
+                    toast(`Restored ${r.imported} tasks and ${r.projects} projects${r.skipped ? ` (${r.skipped} invalid rows skipped)` : ""}`);
+                    await refreshProjects();
                     changed();
                   } catch (x) {
                     toast((x as Error).message || "That file isn't a Work Log backup");
@@ -146,16 +154,27 @@ export default function SettingsView() {
 
         <section className="card">
           <h3>Account</h3>
-          <button
-            className="btn"
-            onClick={async () => {
-              await api.logout();
-              location.reload();
-            }}
-          >
-            <Icon name="logout" size={16} />
-            Log out
-          </button>
+          <div className="mb">
+            <button
+              className="btn"
+              onClick={async () => {
+                await api.logout();
+                location.reload();
+              }}
+            >
+              <Icon name="logout" size={16} />
+              Log out
+            </button>
+            <button
+              className="btn ghost"
+              onClick={async () => {
+                await api.logoutAll();
+                location.reload();
+              }}
+            >
+              Log out on all devices
+            </button>
+          </div>
         </section>
       </div>
     </>

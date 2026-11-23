@@ -9,7 +9,7 @@ import { catColor } from "../colors";
 import MailPanel from "./MailPanel";
 
 export default function ReportView({ kind }: { kind: RangeKind }) {
-  const { today, settings, minutes, version, toast } = useApp();
+  const { today, settings, minutes, projectMap, version, toast } = useApp();
   const [anchor, setAnchor] = useState(today);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [ask, setAsk] = useState("");
@@ -31,8 +31,9 @@ export default function ReportView({ kind }: { kind: RangeKind }) {
   useEffect(() => setAiText(""), [from]);
 
   const st = useMemo(() => rangeStats(from, to, tasks ?? [], minutes), [from, to, tasks, minutes]);
-  const draft = useMemo(() => rangeEmail(kind, from, to, tasks ?? [], settings, minutes), [kind, from, to, tasks, settings, minutes]);
+  const draft = useMemo(() => rangeEmail(kind, from, to, tasks ?? [], { settings, projects: projectMap, minutes }), [kind, from, to, tasks, settings, projectMap, minutes]);
   const maxCat = Math.max(1, ...st.byCategory.map(([, v]) => v));
+  const maxProj = Math.max(1, ...st.byProject.map(([, v]) => v));
   const maxDay = Math.max(60, ...Object.values(st.perDay));
   const label = rangeLabel(kind, from, to);
   const shift = (n: number) => {
@@ -77,20 +78,20 @@ export default function ReportView({ kind }: { kind: RangeKind }) {
         </div>
       </div>
 
-      <div className="stats">
-        <div className="stat">
-          <span>Time logged</span>
+      <div className="strip nobar">
+        <div className="sv">
+          <span>Logged</span>
           <b className="acc">{fmtMins(st.total) || "0h"}</b>
         </div>
-        <div className="stat">
-          <span>Tasks done</span>
+        <div className="sv">
+          <span>Done</span>
           <b>{st.done.length}</b>
         </div>
-        <div className="stat">
-          <span>Days with work</span>
+        <div className="sv">
+          <span>Days worked</span>
           <b>{st.workedDays}</b>
         </div>
-        <div className="stat">
+        <div className="sv">
           <span>Still open</span>
           <b className={st.open.some((t) => t.status === "block") ? "red" : ""}>{st.open.length}</b>
         </div>
@@ -98,8 +99,30 @@ export default function ReportView({ kind }: { kind: RangeKind }) {
 
       <div className="grid">
         <div>
+          {st.byProject.some(([id]) => id) && (
+            <section className="card">
+              <h3>Time by project</h3>
+              <div className="bars">
+                {st.byProject.map(([id, v]) => {
+                  const p = id ? projectMap.get(id) : undefined;
+                  return (
+                    <div className="bar" key={id || "none"}>
+                      <span className="bl" title={p?.name ?? "No project"}>{p?.name ?? "No project"}</span>
+                      <span className="bt">
+                        <i style={{ width: `${(v / maxProj) * 100}%`, background: p?.color ?? "#8a919c" }} />
+                      </span>
+                      <span className="bv">
+                        {fmtMins(v)} <small>{Math.round((v / st.total) * 100)}%</small>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           <section className="card">
-            <h3>Where the time went</h3>
+            <h3>Time by area</h3>
             {st.byCategory.length ? (
               <div className="bars">
                 {st.byCategory.map(([c, v]) => (
@@ -153,7 +176,7 @@ export default function ReportView({ kind }: { kind: RangeKind }) {
                         <li key={t.id}>
                           {t.title}{" "}
                           <span className="mute">
-                            · {fmtDate(t.date, { weekday: "short", day: "numeric", month: "short" })}
+                            {t.projectId && projectMap.get(t.projectId) ? `· ${projectMap.get(t.projectId)!.name} ` : ""}· {fmtDate(t.date, { weekday: "short", day: "numeric", month: "short" })}
                             {minutes(t) >= 1 && ` · ${fmtMins(minutes(t))}`}
                           </span>
                         </li>

@@ -19,6 +19,7 @@ export interface Task {
   status: Status;
   minutes: number;
   note: string;
+  projectId: string | null;
   carried: boolean;
   fromDate: string | null;
   createdAt: number;
@@ -32,6 +33,8 @@ export interface Settings {
   greet: string;
   client: "gmail" | "outlook" | "app";
   saturday: boolean;
+  /** Your job title, used to give the AI context (e.g. "Data Specialist working on DevOps and backend"). */
+  role: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -41,7 +44,18 @@ export const DEFAULT_SETTINGS: Settings = {
   greet: "",
   client: "gmail",
   saturday: true,
+  role: "",
 };
+
+export interface Project {
+  id: string;
+  name: string;
+  color: string;
+  archived: boolean;
+  createdAt: number;
+}
+
+export const PROJECT_COLORS = ["#2457e6", "#d92d20", "#7a4fd6", "#c27803", "#0e8a9e", "#16a34a", "#db2777", "#475569"];
 
 export interface Timer {
   taskId: string;

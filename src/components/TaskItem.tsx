@@ -7,7 +7,8 @@ import { Icon } from "../icons";
 import { catColor } from "../colors";
 
 export default function TaskItem({ task }: { task: Task }) {
-  const { timer, minutes, refreshTimer, changed, toast, categories } = useApp();
+  const { timer, minutes, refreshTimer, changed, toast, categories, projects, projectMap } = useApp();
+  const project = task.projectId ? projectMap.get(task.projectId) : undefined;
   const [editing, setEditing] = useState(false);
   const running = timer?.taskId === task.id;
   const m = minutes(task);
@@ -31,6 +32,7 @@ export default function TaskItem({ task }: { task: Task }) {
         await api.updateTask(task.id, {
           title: String(f.get("title")),
           category: String(f.get("category")),
+          projectId: String(f.get("projectId") || "") || null,
           status: f.get("status") as Task["status"],
           minutes: Number(f.get("minutes") || 0),
           date: String(f.get("date")),
@@ -44,6 +46,16 @@ export default function TaskItem({ task }: { task: Task }) {
         <form className="ef" onSubmit={save}>
           <input name="title" defaultValue={task.title} aria-label="Task" required />
           <div className="row">
+            <select name="projectId" defaultValue={task.projectId ?? ""} aria-label="Project">
+              <option value="">No project</option>
+              {projects
+                .filter((p) => !p.archived || p.id === task.projectId)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
             <select name="category" defaultValue={task.category} aria-label="Area">
               {[...new Set([...categories, task.category])].map((c) => (
                 <option key={c}>{c}</option>
@@ -88,6 +100,12 @@ export default function TaskItem({ task }: { task: Task }) {
       <div>
         <p className="tt">{task.title}</p>
         <p className="meta">
+          {project && (
+            <span className="ptag" style={{ ["--c" as string]: project.color }}>
+              <i className="pdot" />
+              {project.name}
+            </span>
+          )}
           <span className="tag" style={{ ["--c" as string]: catColor(task.category) }}>
             {task.category}
           </span>

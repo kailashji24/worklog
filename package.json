@@ -9,6 +9,8 @@
     "build": "vite build",
     "preview": "npm run build && vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:migrate:local": "wrangler d1 migrations apply worklog-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply worklog-db --remote",
     "deploy": "npm run build && wrangler d1 migrations apply worklog-db --remote && wrangler deploy",
